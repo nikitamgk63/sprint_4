@@ -25,6 +25,17 @@ public class OrderPage {
         return stepTwoPage;
     }
 
+    //метод для ожидания видимости элемента
+    private static void waitForVisibility(WebDriver driver, By locator, int seconds) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    //метод для скроллинга к элементу
+    private static void scrollToElement(WebDriver driver, WebElement element) {
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
+    }
+
     //вложенный класс первого шага заказа
     public class StepOnePage {
         private WebDriver driver;
@@ -69,10 +80,10 @@ public class OrderPage {
             WebElement metroElement = driver.findElement(metroInput);
             metroElement.clear();
             metroElement.sendKeys(metro);
-            new WebDriverWait(driver, Duration.ofSeconds(10))
-                    .until(ExpectedConditions.visibilityOfElementLocated(selectedMetro));
+            //новые методы: для ожидания видимости и скроллинга
+            waitForVisibility(driver, selectedMetro, 10);
             WebElement selectedElement = driver.findElement(selectedMetro);
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", selectedElement);
+            scrollToElement(driver, selectedElement);
             selectedElement.click();
         }
 
@@ -80,6 +91,14 @@ public class OrderPage {
             WebElement phoneElement = driver.findElement(phoneInput);
             phoneElement.clear();
             phoneElement.sendKeys(phone);
+        }
+
+        public boolean isStepOneDataValid() {
+            //проверяем, что данные первого шага были заполнены
+            return !driver.findElement(nameInput).getAttribute("value").isEmpty() &&
+                    !driver.findElement(surnameInput).getAttribute("value").isEmpty() &&
+                    !driver.findElement(addressInput).getAttribute("value").isEmpty() &&
+                    !driver.findElement(phoneInput).getAttribute("value").isEmpty();
         }
 
         public void clickNext() {
@@ -171,6 +190,11 @@ public class OrderPage {
             new WebDriverWait(driver, Duration.ofSeconds(10))
                     .until(ExpectedConditions.visibilityOfElementLocated(orderCompleted));
             return driver.findElement(orderCompleted).isDisplayed();
+        }
+
+        public boolean isStepTwoDataValid() {
+            return !driver.findElement(dateInput).getAttribute("value").isEmpty() &&
+                    driver.findElement(rentalPeriodInput).getText() != null;
         }
 
     }

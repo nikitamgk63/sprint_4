@@ -41,44 +41,46 @@ public class OrderTest extends BaseTestChrome {
     }
 
     @Test
-    public void checkOrderByUpButton() {
+    public void testStepOneVisible() {
         MainPage mainPage = new MainPage(driver);
-        orderPage = mainPage.clickOrderButtonUp();
-        ordering(orderPage);
+        orderPage = mainPage.clickOrderButtonUp(); //используем верхнюю кнопку для примера
+        assertTrue("Первый шаг заказа должен быть виден", orderPage.getStepOnePage().isStepOneVisible());
     }
 
     @Test
-    public void checkOrderByDownButton() {
-        MainPage mainPage = new MainPage(driver);
-        orderPage = mainPage.clickOrderButtonDown();
-        ordering(orderPage);
-    }
-
-    private void ordering(OrderPage orderPage) {
-        //проверка, что мы на первом этапе заказа
-        assertTrue(orderPage.getStepOnePage().isStepOneVisible());
-
-        //заполнение полей первого шага
+    public void testFillStepOneForm() {
+        testStepOneVisible(); //проверка, что первый шаг виден
         orderPage.getStepOnePage().setName(name);
         orderPage.getStepOnePage().setSurname(surname);
         orderPage.getStepOnePage().setAddress(address);
         orderPage.getStepOnePage().setMetro(metro);
         orderPage.getStepOnePage().setPhone(phone);
+        assertTrue("Данные первого шага должны быть заполнены корректно", orderPage.getStepOnePage().isStepOneDataValid());
+    }
 
-        //переход на второй шаг
+    @Test
+    public void testStepTwoVisible() {
+        testFillStepOneForm(); //выполнение первого шага и переход ко второму
         orderPage.getStepOnePage().clickNext();
-        assertTrue(orderPage.getStepTwoPage().isStepTwoVisible());
+        assertTrue("Второй шаг заказа должен быть виден", orderPage.getStepTwoPage().isStepTwoVisible());
+    }
 
-        //заполнение полей второго шага
+    @Test
+    public void testFillStepTwoForm() {
+        testStepTwoVisible(); //проверка, что второй шаг виден
         orderPage.getStepTwoPage().setDate(date);
         orderPage.getStepTwoPage().chooseRentalPeriod(period);
         orderPage.getStepTwoPage().selectBlackCheckbox();
         orderPage.getStepTwoPage().setComment(comment);
+        assertTrue("Данные второго шага должны быть заполнены корректно", orderPage.getStepTwoPage().isStepTwoDataValid());
+    }
 
-        //подтверждение заказа
+    @Test
+    public void testOrderConfirmation() {
+        testFillStepTwoForm(); //проверка, что данные второго шага корректны
         orderPage.getStepTwoPage().clickOrderButton();
-        assertTrue(orderPage.getStepTwoPage().isModalVisible());
+        assertTrue("Модальное окно должно быть видно после подтверждения заказа", orderPage.getStepTwoPage().isModalVisible());
         orderPage.getStepTwoPage().confirmOrder();
-        assertTrue(orderPage.getStepTwoPage().isOrderCompleted());
+        assertTrue("Заказ должен быть завершен", orderPage.getStepTwoPage().isOrderCompleted());
     }
 }
